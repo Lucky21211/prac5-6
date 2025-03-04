@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>KS-Store</title>
+</head>
+<body>
+    <h1>Каталог товаров магазина KS-Store</h1>
+    <ul id="shopList"></ul>
+
+    <script>
+        function loadShopProducts() {
+            fetch('http://localhost:8080/products')
+                .then(res => res.json())
+                .then(products => {
+                    document.getElementById('shopList').innerHTML = products.map(p => `<li>${p.name} - ${p.price}</li>`).join('');
+                });
+        }
+
+        loadShopProducts();
+        setInterval(loadShopProducts, 5000); // Автообновление списка товаров каждые 5 секунд
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ панель</title>
+</head>
+<body>
+    <h1>Управление товарами</h1>
+    <input type="text" id="name" placeholder="Название">
+    <input type="text" id="price" placeholder="Стоимость">
+    <input type="text" id="description" placeholder="Описание">
+    <button onclick="addProduct()">Добавить товар</button>
+    
+    <h2>Список товаров</h2>
+    <ul id="productList"></ul>
+
+    <script>
+        function loadProducts() {
+            fetch('http://localhost:3000/products')
+                .then(res => res.json())
+                .then(products => {
+                    document.getElementById('productList').innerHTML = products.map(p => `<li>${p.name} - ${p.price}</li>`).join('');
+                });
+        }
+
+        function addProduct() {
+            const product = {
+                name: document.getElementById('name').value,
+                price: document.getElementById('price').value,
+                description: document.getElementById('description').value
+            };
+
+            fetch('http://localhost:3000/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(product)
+            }).then(() => {
+                loadProducts();
+                fetch('http://localhost:8080/update'); // Обновление магазина
+            });
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>
