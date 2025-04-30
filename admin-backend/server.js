@@ -10,26 +10,49 @@ app.use(cors());
 
 const productsFile = 'products.json';
 
+// Функция для безопасного чтения файла
+function readProductsFile() {
+    try {
+        if (!fs.existsSync(productsFile)) return [];
+        const data = fs.readFileSync(productsFile, 'utf8');
+        return data ? JSON.parse(data) : [];
+    } catch (error) {
+        console.error('Ошибка чтения файла:', error);
+        return [];
+    }
+}
+
+// Функция для безопасной записи в файл
+function writeProductsFile(products) {
+    try {
+        fs.writeFileSync(productsFile, JSON.stringify(products, null, 2));
+    } catch (error) {
+        console.error('Ошибка записи в файл:', error);
+    }
+}
+
 // Получение всех товаров
 app.get('/products', (req, res) => {
-    fs.readFile(productsFile, (err, data) => {
-        if (err) {
-            res.status(500).json({ error: 'Ошибка чтения файла' });
-        } else {
-            res.json(JSON.parse(data));
-        }
-    });
+    const products = readProductsFile();
+    res.json(products);
 });
 
-// Добавление товара (Исправленный маршрут)
+// Добавление товара
 app.post('/products', (req, res) => {
-    const newProduct = req.body;
+    const { name, price, description } = req.body;
+
+    // Проверяем, что данные корректные
+    if (!name || !price || !description) {
+        return res.status(400).json({ error: 'Все поля должны быть заполнены' });
+    }
+
+    const newProduct = { name, price, description };
     console.log('Новый товар:', newProduct);
 
-    // Загружаем текущие товары
-    let products = JSON.parse(fs.readFileSync(productsFile, 'utf8'));
+    // Загружаем текущие товары и добавляем новый
+    const products = readProductsFile();
     products.push(newProduct);
-    fs.writeFileSync(productsFile, JSON.stringify(products, null, 2));
+    writeProductsFile(products);
 
     // Отправляем товар в shop-backend
     axios.post('http://localhost:8080/products', newProduct)
@@ -38,16 +61,13 @@ app.post('/products', (req, res) => {
             res.status(201).json({ message: 'Товар добавлен!' });
         })
         .catch(err => {
-            console.error('Ошибка передачи в магазин:', err);
-            res.status(500).json({ error: 'Ошибка при передаче данных в магазин', details: err });
+            console.error('Ошибка передачи в магазин:', err.message);
+            res.status(500).json({ error: 'Ошибка при передаче данных в магазин', details: err.message });
         });
 });
 
 // Отдаем панель администратора
-app.use(express.static(path.join(__dirname, '../frontend-admin')));
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend-admin/index.html'));
-});
+
 
 // Запуск сервера
 app.listen(3000, () => {

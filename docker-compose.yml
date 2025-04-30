@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  shop-backend:
+    build: ./shop-backend
+    ports:
+      - '4000:4000'
+    volumes:
+      - ./shop-backend:/app
+    working_dir: /app
+    command: node server.js
+
+  admin-backend:
+    build: ./admin-backend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./admin-backend:/app
+    working_dir: /app
+    command: node server.js
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - '8080:80'
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - shop-backend
+
+  frontend-admin:
+    image: nginx:alpine
+    ports:
+      - '8082:80'
+    volumes:
+      - ./frontend-admin:/usr/share/nginx/html
+    depends_on:
+      - admin-backend

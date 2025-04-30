@@ -4,21 +4,53 @@
     <meta charset="UTF-8">
     <title>KS-Store</title>
 </head>
+
+<script src="script.js" defer></script>
+<script>
+    const ws = new WebSocket('ws://localhost:8081');
+
+    ws.onmessage = (event) => {
+        const chatWindow = document.getElementById('chatWindow');
+        const messageData = JSON.parse(event.data);
+        chatWindow.innerHTML += `<p><strong>${messageData.sessionId}:</strong> ${messageData.message}</p>`;
+        chatWindow.scrollTop = chatWindow.scrollHeight; // Автопрокрутка вниз
+    };
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value;
+        if (message.trim() === '') return;
+
+        const data = JSON.stringify({ sessionId: 'User', message });
+        ws.send(data);
+
+        input.value = ''; // Очищаем поле ввода
+    }
+</script>
+
 <body>
     <h1>Каталог товаров магазина KS-Store</h1>
-    <ul id="shopList"></ul>
+    <ul id="productList"></ul>
 
     <script>
         function loadShopProducts() {
-            fetch('http://localhost:8080/products')
+            fetch('http://localhost:4000/products')
                 .then(res => res.json())
                 .then(products => {
-                    document.getElementById('shopList').innerHTML = products.map(p => `<li>${p.name} - ${p.price}</li>`).join('');
+                    document.getElementById('productList').innerHTML = products.map(p => `<li>${p.name} - ${p.price}</li>`).join('');
                 });
         }
 
         loadShopProducts();
         setInterval(loadShopProducts, 5000); // Автообновление списка товаров каждые 5 секунд
     </script>
+
+<div id="products"></div>
+
+<h2>Чат поддержки</h2>
+<div id="chatWindow" style="border: 1px solid #ccc; height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 10px;"></div>
+<input type="text" id="messageInput" placeholder="Введите сообщение...">
+<button onclick="sendMessage()">Отправить</button>
+
 </body>
 </html>

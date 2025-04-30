@@ -1,64 +1,71 @@
-const API_URL = 'http://localhost:3000/products';
+const chatWindow = document.getElementById("chatWindow");
+const messageInput = document.getElementById("messageInput");
 
-// Получение товаров
+const ws = new WebSocket("ws://localhost:8081"); // Убедись, что WebSocket-сервер работает
+
+ws.onmessage = (event) => {
+    const messageData = JSON.parse(event.data);
+    const message = document.createElement("p");
+    message.innerHTML = `<strong>${messageData.sessionId}:</strong> ${messageData.message}`;
+    chatWindow.appendChild(message);
+    chatWindow.scrollTop = chatWindow.scrollHeight; // Автопрокрутка вниз
+};
+
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message === "") return;
+
+    const data = JSON.stringify({ sessionId: "Admin", message });
+    ws.send(data);
+
+    messageInput.value = ""; // Очищаем поле ввода
+}
+
+// Функция загрузки списка товаров
+// Функция загрузки списка товаров
 function loadProducts() {
-    fetch(API_URL)
-        .then(res => res.json())
+    fetch("http://localhost:8080/products") // ПРАВИЛЬНЫЙ ПОРТ!
+        .then(response => response.json())
         .then(products => {
-            const productsDiv = document.getElementById('products');
-            productsDiv.innerHTML = '';
+            const productList = document.getElementById("adminProductList");
+            productList.innerHTML = "";
             products.forEach(product => {
-                const div = document.createElement('div');
-                div.classList.add('product');
-                div.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p><strong>Цена:</strong> ${product.price}</p>
-                    <p><strong>Описание:</strong> ${product.description}</p>
-                    <button onclick="editProduct(${product.id})">Редактировать</button>
-                    <button onclick="deleteProduct(${product.id})">Удалить</button>
-                `;
-                productsDiv.appendChild(div);
+                const item = document.createElement("li");
+                item.innerHTML = `<strong>${product.name}</strong> - ${product.price} руб.<br> <em>${product.description}</em>`;
+                productList.appendChild(item);
             });
-        });
+        })
+        .catch(error => console.error("Ошибка загрузки товаров:", error));
 }
 
-// Добавление товара
-document.getElementById('addProduct').addEventListener('click', () => {
-    const name = document.getElementById('name').value;
-    const price = document.getElementById('price').value;
-    const description = document.getElementById('description').value;
 
-    fetch('http://localhost:3000/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, price, description })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-    })
-    .catch(error => console.error('Ошибка:', error));
-});
+// Загружаем товары при старте страницы
+document.addEventListener("DOMContentLoaded", loadProducts);
 
+document.getElementById("addProduct").addEventListener("click", () => {
+    const name = document.getElementById("name").value;
+    const price = document.getElementById("price").value;
+    const description = document.getElementById("description").value;
 
-// Удаление товара
-function deleteProduct(id) {
-    fetch(`${API_URL}/${id}`, { method: 'DELETE' }).then(() => loadProducts());
-}
-
-// Редактирование товара
-function editProduct(id) {
-    const name = prompt('Введите новое название');
-    const price = prompt('Введите новую цену');
-    const description = prompt('Введите новое описание');
-
-    if (name && price && description) {
-        fetch(`${API_URL}/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, price, description })
-        }).then(() => loadProducts());
+    if (!name || !price || !description) {
+        alert("Заполните все поля!");
+        return;
     }
-}
 
-loadProducts();
+    const newProduct = { name, price, description };
+
+    fetch("http://localhost:3000/products", { // Отправляем товар в admin-backend
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProduct)
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Товар добавлен!");
+            loadProducts(); // Обновляем список товаров
+        } else {
+            response.json().then(data => alert(`Ошибка: ${data.error}`));
+        }
+    })
+    .catch(error => console.error("Ошибка добавления товара:", error));
+});

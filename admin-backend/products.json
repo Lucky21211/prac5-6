@@ -54,5 +54,15 @@
     "name": "Провод Type-C",
     "price": "2500",
     "description": "Apple"
+  },
+  {
+    "name": "Планшет",
+    "price": "60000",
+    "description": "Универсальный"
+  },
+  {
+    "name": "Настольный микрофон",
+    "price": "12000",
+    "description": "Удобный с RGB подсветкой"
   }
 ]

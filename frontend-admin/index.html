@@ -12,7 +12,7 @@
     <button onclick="addProduct()">Добавить товар</button>
     
     <h2>Список товаров</h2>
-    <ul id="productList"></ul>
+    <ul id="adminProductList"></ul>
 
     <script>
         function loadProducts() {
@@ -42,5 +42,14 @@
 
         loadProducts();
     </script>
+
+<div id="products"></div>
+
+<h2>Чат поддержки</h2>
+<div id="chatWindow" style="border: 1px solid #ccc; height: 200px; overflow-y: auto; margin-bottom: 10px; padding: 10px;"></div>
+<input type="text" id="messageInput" placeholder="Введите сообщение...">
+<button onclick="sendMessage()">Отправить</button>
+
+
 </body>
 </html>
