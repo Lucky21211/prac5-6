@@ -14,4 +14,4 @@
 
 ```bash
 git clone https://github.com/Lucky21211/prac5-6.git
-cd prac5-6
+cd 56pract
