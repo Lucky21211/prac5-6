@@ -10,6 +10,8 @@
 ```bash
 git clone https://github.com/Lucky21211/prac5-6.git
 cd 56pract
+```
 
 ### 2. 🚀 Запуск с Docker Compose
+```bash
 docker-compose up --build
