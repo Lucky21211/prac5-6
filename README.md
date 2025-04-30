@@ -7,8 +7,8 @@
 - Графа, REST API и поддержки WebSocket-чата
 
 ### 1. Клонирование репозитория
-
 ```bash
+
 git clone https://github.com/Lucky21211/prac5-6.git
 cd prac5-6
 
